@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciador de Contas</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --text-color: #e2e8f0;
+            --primary-color: #3b82f6;
+            --secondary-color: #1e293b;
+            --success-color: #22c55e;
+            --danger-color: #ef4444;
+            --warning-color: #f59e0b;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 20px;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .tabs {
+            background: var(--secondary-color);
+            padding: 10px;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .tab {
+            font-weight: 600;
+            padding: 12px 24px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .tab:hover {
+            transform: translateY(-2px);
+            background-color: var(--primary-color);
+        }
+
+        .tab.active {
+            background-color: var(--primary-color);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+
+        .content {
+            background-color: var(--secondary-color);
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
+            animation: slideUp 0.5s ease;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 10px;
+            background-color: var(--bg-color);
+            border: 1px solid var(--primary-color);
+            color: var(--text-color);
+            border-radius: 5px;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        input:focus, select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+            outline: none;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: var(--primary-color);
+            color: var(--text-color);
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            position: relative;
+            overflow: hidden;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .bills-list {
+            margin-top: 20px;
+        }
+
+        .bill-item {
+            background: var(--secondary-color);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            animation: slideIn 0.3s ease;
+            transition: all 0.3s ease;
+            position: relative;
+            padding-right: 40px;
+        }
+
+        .bill-item.removing {
+            animation: slideOut 0.3s ease forwards;
+        }
+
+        .bill-item.paid-animation {
+            animation: paid 0.5s ease forwards;
+        }
+
+        .bill-item.pinned {
+            border-left: 4px solid #f59e0b;
+            background: linear-gradient(to right, var(--secondary-color), rgba(245, 158, 11, 0.1));
+        }
+
+        .pin-button {
+            position: absolute;
+            top: 50%;
+            right: 15px;
+            background: transparent;
+            border: none;
+            color: #94a3b8;
+            cursor: pointer;
+            padding: 8px;
+            transition: all 0.2s ease;
+            z-index: 1;
+            transform: translateY(-50%);
+        }
+
+        .pin-button:hover {
+            color: #f59e0b;
+            transform: translateY(-50%) scale(1.1);
+        }
+
+        .pinned .pin-button {
+            color: #f59e0b;
+            transform: translateY(-50%) rotate(-45deg);
+        }
+
+        .bill-info {
+            position: relative;
+            width: 100%;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 15px;
+            margin-bottom: 15px;
+        }
+
+        .bill-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-color);
+            margin-bottom: 12px;
+        }
+
+        .bill-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #3b82f6;
+            margin-bottom: 8px;
+        }
+
+        .bill-date {
+            font-size: 0.9rem;
+            color: #94a3b8;
+            margin-bottom: 10px;
+        }
+
+        .bill-status {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            background-color: var(--warning-color);
+            color: #000;
+        }
+
+        .bill-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .btn-pay {
+            background-color: #3b82f6;
+            color: white;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: 600;
+            border: none;
+            width: 100%;
+            transition: all 0.2s ease;
+        }
+
+        .btn-delete {
+            background-color: transparent;
+            color: #ef4444;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: 600;
+            border: 1px solid #ef4444;
+            width: 100%;
+            transition: all 0.2s ease;
+        }
+
+        .btn-pay:active, .btn-delete:active {
+            transform: scale(0.98);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes slideOut {
+            from {
+                opacity: 1;
+                transform: translateX(0);
+            }
+            to {
+                opacity: 0;
+                transform: translateX(100%);
+            }
+        }
+
+        @keyframes paid {
+            0% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(0.95);
+                background-color: var(--success-color);
+            }
+            100% {
+                transform: scale(1);
+                background-color: var(--secondary-color);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 1rem auto;
+                padding: 15px;
+            }
+
+            .tabs {
+                flex-direction: row;
+                flex-wrap: wrap;
+            }
+
+            .tab {
+                flex: 1;
+                text-align: center;
+                padding: 10px;
+            }
+
+            .bill-item {
+                padding: 16px;
+                margin: 10px;
+            }
+        }
+
+        /* Adicionar estilos para o footer */
+        .footer {
+            text-align: center;
+            padding: 20px;
+            margin-top: 30px;
+            color: #94a3b8;
+            font-size: 0.9rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .footer a {
+            color: #3b82f6;
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+
+        .footer a:hover {
+            color: #60a5fa;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('monthly')">Contas Mensais</button>
+            <button class="tab" onclick="switchTab('vehicle')">Manutenção Veículos</button>
+        </div>
+
+        <div class="content" id="monthly">
+            <div class="form-group">
+                <input type="text" id="monthly-description" placeholder="Descrição da conta">
+            </div>
+            <div class="form-group">
+                <input type="number" id="monthly-value" placeholder="Valor">
+            </div>
+            <div class="form-group">
+                <input type="date" id="monthly-due-date">
+            </div>
+            <button onclick="addBill('monthly')">Adicionar Conta</button>
+            <div class="bills-list" id="monthly-bills"></div>
+        </div>
+
+        <div class="content" id="vehicle" style="display: none;">
+            <div class="form-group">
+                <input type="text" id="vehicle-description" placeholder="Descrição do serviço">
+            </div>
+            <div class="form-group">
+                <input type="number" id="vehicle-value" placeholder="Valor">
+            </div>
+            <div class="form-group">
+                <input type="date" id="vehicle-date">
+            </div>
+            <button onclick="addBill('vehicle')">Adicionar Manutenção</button>
+            <div class="bills-list" id="vehicle-bills"></div>
+        </div>
+    </div>
+
+    <div class="footer">
+        Desenvolvido por: Jeff Kevyn
+    </div>
+
+    <script>
+        let bills = {
+            monthly: [],
+            vehicle: []
+        };
+
+        // Se houver dados no localStorage, garantir que todas as contas tenham a propriedade pinned
+        if (localStorage.getItem('bills')) {
+            const savedBills = JSON.parse(localStorage.getItem('bills'));
+            Object.keys(savedBills).forEach(type => {
+                savedBills[type] = savedBills[type].map(bill => ({
+                    ...bill,
+                    pinned: bill.pinned || false
+                }));
+            });
+            bills = savedBills;
+            localStorage.setItem('bills', JSON.stringify(bills));
+        }
+
+        function switchTab(tab) {
+            document.querySelectorAll('.content').forEach(content => {
+                content.style.display = 'none';
+            });
+            document.querySelectorAll('.tab').forEach(t => {
+                t.classList.remove('active');
+            });
+            document.getElementById(tab).style.display = 'block';
+            document.querySelector(`[onclick="switchTab('${tab}')"]`).classList.add('active');
+        }
+
+        function calculateDueStatus(dueDate) {
+            const today = new Date();
+            const due = new Date(dueDate + 'T12:00:00');
+            const diffTime = due.getTime() - today.getTime();
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+            return {
+                days: diffDays,
+                status: diffDays < 0 ? 'danger' : diffDays <= 3 ? 'warning' : 'normal'
+            };
+        }
+
+        function getStatusMessage(dueStatus) {
+            if (dueStatus.status === 'danger') {
+                return `Atrasada há ${Math.abs(dueStatus.days)} dias`;
+            } else if (dueStatus.status === 'warning') {
+                return dueStatus.days === 0 ? 'Vence hoje!' : 
+                       dueStatus.days === 1 ? 'Vence amanhã!' :
+                       `Vence em ${dueStatus.days} dias`;
+            }
+            return `Faltam ${dueStatus.days} dias`;
+        }
+
+        function addBill(type) {
+            const description = document.getElementById(`${type}-description`).value;
+            const value = document.getElementById(`${type}-value`).value;
+            const date = document.getElementById(`${type}-${type === 'monthly' ? 'due-date' : 'date'}`).value;
+            
+            if (!description || !value || !date) {
+                alert('Por favor, preencha todos os campos!');
+                return;
+            }
+
+            const adjustedDate = new Date(date + 'T12:00:00').toISOString().split('T')[0];
+
+            const bill = {
+                id: Date.now(),
+                description,
+                value,
+                date: adjustedDate,
+                paid: false,
+                pinned: false
+            };
+
+            bills[type].push(bill);
+            localStorage.setItem('bills', JSON.stringify(bills));
+            renderBills(type);
+            clearForm(type);
+        }
+
+        function togglePaid(type, id) {
+            const bill = bills[type].find(b => b.id === id);
+            if (bill) {
+                const element = document.querySelector(`[data-id="${id}"]`);
+                if (element) {
+                    element.classList.add('paid-animation');
+                    
+                    setTimeout(() => {
+                        bill.paid = !bill.paid;
+                        localStorage.setItem('bills', JSON.stringify(bills));
+                        renderBills(type);
+                    }, 500);
+                } else {
+                    bill.paid = !bill.paid;
+                    localStorage.setItem('bills', JSON.stringify(bills));
+                    renderBills(type);
+                }
+            }
+        }
+
+        function togglePin(type, id) {
+            const bill = bills[type].find(b => b.id === id);
+            if (bill) {
+                bill.pinned = !bill.pinned;
+                localStorage.setItem('bills', JSON.stringify(bills));
+                renderBills(type);
+            }
+        }
+
+        function deleteBill(type, id) {
+            const element = document.querySelector(`[data-id="${id}"]`);
+            if (element) {
+                element.classList.add('removing');
+                
+                setTimeout(() => {
+                    bills[type] = bills[type].filter(b => b.id !== id);
+                    localStorage.setItem('bills', JSON.stringify(bills));
+                    renderBills(type);
+                }, 300);
+            } else {
+                bills[type] = bills[type].filter(b => b.id !== id);
+                localStorage.setItem('bills', JSON.stringify(bills));
+                renderBills(type);
+            }
+        }
+
+        function clearForm(type) {
+            document.getElementById(`${type}-description`).value = '';
+            document.getElementById(`${type}-value`).value = '';
+            document.getElementById(`${type}-${type === 'monthly' ? 'due-date' : 'date'}`).value = '';
+        }
+
+        function renderBills(type) {
+            const container = document.getElementById(`${type}-bills`);
+            container.innerHTML = '';
+
+            // Ordenar contas: primeiro as fixadas, depois por data
+            bills[type].sort((a, b) => {
+                if (a.pinned && !b.pinned) return -1;
+                if (!a.pinned && b.pinned) return 1;
+                return new Date(a.date) - new Date(b.date);
+            });
+
+            bills[type].forEach(bill => {
+                const div = document.createElement('div');
+                div.setAttribute('data-id', bill.id);
+
+                if (!bill.paid) {
+                    const dueStatus = calculateDueStatus(bill.date);
+                    const statusMessage = getStatusMessage(dueStatus);
+                    
+                    div.className = `bill-item ${dueStatus.status} ${bill.pinned ? 'pinned' : ''}`;
+                    div.innerHTML = `
+                        <button class="pin-button" title="${bill.pinned ? 'Desafixar' : 'Fixar'}">
+                            <span class="material-icons-round">
+                                push_pin
+                            </span>
+                        </button>
+                        <div class="bill-info">
+                            <div class="bill-title">${bill.description}</div>
+                            <div class="bill-value">R$ ${parseFloat(bill.value).toLocaleString('pt-BR', {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2
+                            })}</div>
+                            <div class="bill-date">${new Date(bill.date).toLocaleDateString()}</div>
+                            <div class="bill-status">${statusMessage}</div>
+                        </div>
+                        <div class="bill-actions">
+                            <button class="btn-pay">Marcar Pago</button>
+                            <button class="btn-delete">Excluir</button>
+                        </div>
+                    `;
+
+                    // Adicionar eventos
+                    const pinButton = div.querySelector('.pin-button');
+                    const payButton = div.querySelector('.btn-pay');
+                    const deleteButton = div.querySelector('.btn-delete');
+
+                    if (pinButton) {
+                        pinButton.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            togglePin(type, bill.id);
+                        });
+                    }
+                    
+                    payButton.addEventListener('click', () => togglePaid(type, bill.id));
+                    deleteButton.addEventListener('click', () => deleteBill(type, bill.id));
+                } else {
+                    div.className = 'bill-item paid';
+                    div.innerHTML = `
+                        <div class="bill-info">
+                            <div class="bill-title">${bill.description}</div>
+                            <div class="bill-value">R$ ${parseFloat(bill.value).toLocaleString('pt-BR', {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2
+                            })}</div>
+                            <div class="bill-date">${new Date(bill.date).toLocaleDateString()}</div>
+                            <div class="bill-status">Paga</div>
+                        </div>
+                        <div class="bill-actions">
+                            <button class="btn-pay">Desmarcar Pago</button>
+                            <button class="btn-delete">Excluir</button>
+                        </div>
+                    `;
+
+                    // Adicionar event listeners para contas pagas
+                    const payButton = div.querySelector('.btn-pay');
+                    const deleteButton = div.querySelector('.btn-delete');
+
+                    payButton.addEventListener('click', () => togglePaid(type, bill.id));
+                    deleteButton.addEventListener('click', () => deleteBill(type, bill.id));
+                }
+
+                container.appendChild(div);
+            });
+        }
+
+        // Inicializar a renderização
+        renderBills('monthly');
+        renderBills('vehicle');
+    </script>
+</body>
+</html>
